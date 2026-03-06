@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#0a0e1a;font-family:'Space Grotesk',sans-serif;color:#f0f4ff;overflow-y:auto;overflow-x:hidden}
+
+body{padding:0.8rem 1rem 1.2rem}
+
+.header{text-align:center;margin-bottom:0.7rem}
+.badge{display:inline-block;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#f472b6;padding:0.2rem 0.65rem;background:#1a2235;border:1px solid #f472b6;border-radius:20px;margin-bottom:0.35rem}
+.title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#f0f4ff;margin-bottom:0.15rem}
+.subtitle{font-size:0.75rem;color:#64748b}
+#status{font-size:0.75rem;color:#64748b;margin-top:0.2rem;min-height:1.2em}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-bottom:0.6rem}
+
+.q-card{background:#111827;border:1px solid #2a3a55;border-radius:8px;padding:0.5rem 0.65rem;transition:border-color 0.3s}
+.q-head{font-size:0.73rem;font-weight:600;color:#f0f4ff;margin-bottom:0.28rem;display:flex;justify-content:space-between;align-items:flex-start;gap:0.4rem}
+.q-num{color:#f472b6;margin-right:0.25rem;flex-shrink:0}
+.diff-badge{font-size:0.58rem;border:1px solid currentColor;border-radius:3px;padding:0.08rem 0.28rem;flex-shrink:0;margin-top:1px}
+
+.opts{display:flex;flex-direction:column;gap:0.18rem}
+.opt{display:flex;align-items:flex-start;gap:0.35rem;cursor:pointer;padding:0.2rem 0.38rem;border-radius:4px;border:1px solid transparent;transition:background 0.15s,border-color 0.15s,color 0.15s;font-size:0.69rem;color:#94a3b8;user-select:none}
+.opt:hover:not(.locked){background:rgba(244,114,182,0.06);border-color:rgba(244,114,182,0.3)}
+.opt input{accent-color:#f472b6;cursor:pointer;margin-top:2px;flex-shrink:0}
+.opt.selected{background:rgba(244,114,182,0.1);border-color:#f472b6;color:#f472b6}
+.opt.correct{background:rgba(74,222,128,0.1);border-color:#4ade80;color:#4ade80}
+.opt.wrong{background:rgba(248,113,113,0.09);border-color:#f87171;color:#f87171}
+
+.explanation{display:none;margin-top:0.28rem;font-size:0.67rem;padding:0.28rem 0.45rem;border-radius:4px;border-left:3px solid #4ade80;background:rgba(74,222,128,0.05);color:#94a3b8;line-height:1.5}
+
+.actions{display:flex;justify-content:center;gap:0.8rem;margin-bottom:0.5rem}
+.btn-submit{background:linear-gradient(135deg,rgba(244,114,182,0.15),rgba(167,139,250,0.1));border:1px solid #f472b6;color:#f472b6;padding:0.45rem 1.8rem;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:all 0.2s}
+.btn-submit:hover{background:rgba(244,114,182,0.2)}
+.btn-retry{background:#1a2235;border:1px solid #2a3a55;color:#94a3b8;padding:0.45rem 1.8rem;border-radius:8px;cursor:pointer;font-size:0.82rem;font-family:'Space Grotesk',sans-serif;display:none}
+.btn-retry:hover{border-color:#94a3b8;color:#f0f4ff}
+
+#results{display:none;text-align:center;padding:0.6rem;background:#111827;border:1px solid #2a3a55;border-radius:10px}
+.score-big{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800}
+.score-msg{font-size:0.78rem;color:#94a3b8;margin-top:0.2rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">Knowledge Check</div>
+  <div class="title">Quick Quiz</div>
+  <div id="status" class="subtitle">Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong></div>
+</div>
+
+<div class="grid" id="quiz-grid"></div>
+
+<div class="actions">
+  <button class="btn-submit" id="btn-submit" onclick="submitQuiz()">Submit Answers</button>
+  <button class="btn-retry" id="btn-retry" onclick="resetQuiz()">&#8635; Retry</button>
+</div>
+
+<div id="results">
+  <div class="score-big" id="score-big"></div>
+  <div class="score-msg" id="score-msg"></div>
+</div>
+
+<script>
+var QUESTIONS = [
+  {
+    q: "What does a time series represent?",
+    diff: "Easy", diffColor: "#4ade80",
+    opts: ["A static snapshot at one moment", "Any measurement recorded over time", "A frequency spectrum", "A type of wavelet transform"],
+    ans: 1,
+    exp: "A time series is any number recorded over time, like oil prices monthly or GDP every quarter."
+  },
+  {
+    q: "What is the main limitation of Fourier analysis?",
+    diff: "Easy", diffColor: "#4ade80",
+    opts: ["Cannot detect frequencies", "Too slow to compute", "Shows WHAT frequencies exist but not WHEN", "Only works on economic data"],
+    ans: 2,
+    exp: "Fourier has time blindness: it reveals what frequencies exist but loses all time information."
+  },
+  {
+    q: "Which wavelet uses a simple +1 and -1 step function?",
+    diff: "Easy", diffColor: "#4ade80",
+    opts: ["Morlet wavelet", "Daubechies db4", "Haar wavelet", "Mexican hat"],
+    ans: 2,
+    exp: "The Haar wavelet uses +1 and -1 values, making it the simplest and fastest shock detector."
+  },
+  {
+    q: "In db4 decomposition, which layer represents the long-term trend?",
+    diff: "Medium", diffColor: "#fbbf24",
+    opts: ["D1 — red", "D2 — gold", "D3 — green", "A3 — teal"],
+    ans: 3,
+    exp: "A3 is the Approximation at level 3, capturing the slow long-term economic movement over years."
+  },
+  {
+    q: "The 2008 crisis lasted ~2 years. In which layer does it mainly appear?",
+    diff: "Medium", diffColor: "#fbbf24",
+    opts: ["D1 — High-frequency noise", "D2 — Monthly volatility", "D3 — Business cycles 2-4 yr", "A3 — Long-term trend"],
+    ans: 2,
+    exp: "2-year events appear in D3 (business cycles). COVID lasted only 2 months so it appears in D1."
+  },
+  {
+    q: "What does Morlet coherence measure between two signals?",
+    diff: "Medium", diffColor: "#fbbf24",
+    opts: ["Speed of computation", "How synchronized two signals are over time", "Number of decomposition levels", "ARMA error rate"],
+    ans: 1,
+    exp: "Morlet coherence measures how synchronized two signals are, like Gold vs Dollar, and whether this changes during crises."
+  },
+  {
+    q: "What was the RMSE improvement of Wavelet+ARMA over ARMA alone on Bitcoin?",
+    diff: "Good", diffColor: "#fb923c",
+    opts: ["25% improvement", "40% improvement", "61% improvement", "82% improvement"],
+    ans: 2,
+    exp: "RMSE dropped from $12,400 to $4,800, a 61% improvement in forecast accuracy."
+  },
+  {
+    q: "Why apply ARMA to each wavelet layer separately rather than the full signal?",
+    diff: "Good", diffColor: "#fb923c",
+    opts: ["Each layer has more data", "Each layer is simpler and more stationary", "ARMA cannot process full signals", "Layers have higher frequency"],
+    ans: 1,
+    exp: "After decomposition each layer is simpler and closer to stationary, exactly what ARMA models need to work well."
+  },
+  {
+    q: "What anomaly did Morlet coherence detect in Gold vs Dollar during 2022-2024?",
+    diff: "Deep", diffColor: "#f87171",
+    opts: ["Both crashed simultaneously", "Both ROSE simultaneously breaking the classic inverse rule", "Coherence reached zero", "Dollar became uncorrelated with all assets"],
+    ans: 1,
+    exp: "Normally Gold UP means Dollar DOWN. In 2022-2024 both rose simultaneously, an anomaly only Morlet wavelet coherence could detect."
+  },
+  {
+    q: "In the Morlet formula, what does the Gaussian component e^(-t^2/2) provide?",
+    diff: "Deep", diffColor: "#f87171",
+    opts: ["Frequency sensitivity only", "TIME localization", "Both time and frequency equally", "Only normalization"],
+    ans: 1,
+    exp: "The Gaussian bell localizes the wavelet in TIME, while the complex sine wave e^(iw0t) provides FREQUENCY sensitivity."
+  }
+];
+
+var userAnswers = {};
+var submitted = false;
+
+// Build quiz
+var grid = document.getElementById('quiz-grid');
+QUESTIONS.forEach(function(q, qi) {
+  var card = document.createElement('div');
+  card.className = 'q-card';
+  card.id = 'card-' + qi;
+
+  var head = '<div class="q-head"><span><span class="q-num">Q' + (qi+1) + '.</span>' + q.q + '</span>'
+    + '<span class="diff-badge" style="color:' + q.diffColor + '">' + q.diff + '</span></div>';
+
+  var opts = '<div class="opts">';
+  q.opts.forEach(function(opt, oi) {
+    opts += '<label class="opt" id="opt-' + qi + '-' + oi + '" onclick="selectOpt(' + qi + ',' + oi + ')">'
+      + '<input type="radio" name="q' + qi + '" value="' + oi + '"> <span>' + opt + '</span></label>';
+  });
+  opts += '</div>';
+
+  var exp = '<div class="explanation" id="exp-' + qi + '">' + q.exp + '</div>';
+
+  card.innerHTML = head + opts + exp;
+  grid.appendChild(card);
+});
+
+function selectOpt(qi, oi) {
+  if (submitted) return;
+  userAnswers[qi] = oi;
+  for (var k = 0; k < 4; k++) {
+    var lbl = document.getElementById('opt-' + qi + '-' + k);
+    if (!lbl) continue;
+    lbl.classList.remove('selected');
+    if (k === oi) lbl.classList.add('selected');
+  }
+}
+
+function submitQuiz() {
+  var answered = Object.keys(userAnswers).length;
+  if (answered < 10) {
+    document.getElementById('status').innerHTML = '<span style="color:#f87171">Please answer all questions (' + answered + '/10 answered)</span>';
+    return;
+  }
+  submitted = true;
+  var score = 0;
+  QUESTIONS.forEach(function(q, qi) {
+    var correct = q.ans;
+    var user = userAnswers[qi];
+    var card = document.getElementById('card-' + qi);
+    for (var k = 0; k < 4; k++) {
+      var lbl = document.getElementById('opt-' + qi + '-' + k);
+      if (!lbl) continue;
+      lbl.classList.remove('selected');
+      lbl.classList.add('locked');
+      var inp = lbl.querySelector('input');
+      if (inp) inp.disabled = true;
+      if (k === correct) {
+        lbl.classList.add('correct');
+      } else if (k === user && user !== correct) {
+        lbl.classList.add('wrong');
+      }
+    }
+    if (user === correct) {
+      score++;
+      if (card) card.style.borderColor = 'rgba(74,222,128,0.5)';
+    } else {
+      if (card) card.style.borderColor = 'rgba(248,113,113,0.4)';
+    }
+    var expEl = document.getElementById('exp-' + qi);
+    if (expEl) expEl.style.display = 'block';
+  });
+
+  var pct = Math.round((score / 10) * 100);
+  var color = score >= 8 ? '#4ade80' : score >= 5 ? '#fbbf24' : '#f87171';
+  var msg = score >= 8 ? 'Excellent! You mastered the material.'
+    : score >= 5 ? 'Good understanding! Review the highlighted answers.'
+    : 'Keep studying — re-read the slides and try again!';
+
+  document.getElementById('score-big').innerHTML = '<span style="color:' + color + '">' + score + '/10</span> <span style="font-size:1rem;color:#64748b">(' + pct + '%)</span>';
+  document.getElementById('score-msg').textContent = msg;
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-block';
+  document.getElementById('status').innerHTML = '<span style="color:' + color + '">Score: ' + score + '/10 — ' + msg + '</span>';
+}
+
+function resetQuiz() {
+  userAnswers = {};
+  submitted = false;
+  QUESTIONS.forEach(function(q, qi) {
+    var card = document.getElementById('card-' + qi);
+    if (card) card.style.borderColor = '#2a3a55';
+    for (var k = 0; k < 4; k++) {
+      var lbl = document.getElementById('opt-' + qi + '-' + k);
+      if (!lbl) continue;
+      lbl.className = 'opt';
+      var inp = lbl.querySelector('input');
+      if (inp) { inp.disabled = false; inp.checked = false; }
+    }
+    var expEl = document.getElementById('exp-' + qi);
+    if (expEl) expEl.style.display = 'none';
+  });
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('btn-submit').style.display = 'inline-block';
+  document.getElementById('btn-retry').style.display = 'none';
+  document.getElementById('status').innerHTML = 'Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong>';
+}
+</script>
+</body>
+</html>
