@@ -394,8 +394,14 @@ svg text{font-family:'Space Grotesk',sans-serif}
   .comparison-table th{padding:0.4rem 0.5rem;font-size:0.65rem}
   .comparison-table td{padding:0.35rem 0.5rem;font-size:0.65rem}
   
-  /* QR code: hide on small phones (they're already on a device) */
-  #land-qr{display:none !important}
+  /* QR code: smaller + centered at bottom on mobile */
+  #land-qr{
+    bottom:0.8rem !important;
+    right:0.8rem !important;
+    gap:0.3rem !important;
+  }
+  #land-qr-canvas canvas,
+  #land-qr-canvas img{width:96px !important;height:96px !important}
 
   /* Landing page mobile */
   #land-title{font-size:1.55rem !important;line-height:1.2 !important}
@@ -3115,8 +3121,8 @@ function generateLandingQR(){
   if(typeof QRCode==='undefined'){setTimeout(generateLandingQR,300);return;}
   new QRCode(el,{
     text:'https://waveletpro.vercel.app/',
-    width:112,
-    height:112,
+    width:140,
+    height:140,
     colorDark:'#38bdf8',
     colorLight:'#0a0e1a',
     correctLevel:QRCode.CorrectLevel.M
