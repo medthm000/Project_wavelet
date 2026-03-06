@@ -27,6 +27,7 @@ MathJax = {
 };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 :root {
   --bg-deep: #0a0e1a;
@@ -393,6 +394,9 @@ svg text{font-family:'Space Grotesk',sans-serif}
   .comparison-table th{padding:0.4rem 0.5rem;font-size:0.65rem}
   .comparison-table td{padding:0.35rem 0.5rem;font-size:0.65rem}
   
+  /* QR code: hide on small phones (they're already on a device) */
+  #land-qr{display:none !important}
+
   /* Landing page mobile */
   #land-title{font-size:1.55rem !important;line-height:1.2 !important}
   #land-sub{font-size:0.8rem !important}
@@ -610,6 +614,17 @@ svg text{font-family:'Space Grotesk',sans-serif}
       <span style="font-size:0.72rem;color:#64748b;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:0.4rem;"><span style="font-size:0.9rem;">🖱</span> Scroll to read</span>
       <span style="font-size:0.72rem;color:#64748b;">•</span>
       <span style="font-size:0.72rem;color:#64748b;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:0.4rem;"><span style="font-size:0.9rem;">👆</span> Click Dots</span>
+    </div>
+  </div>
+  <!-- QR Code badge -->
+  <div id="land-qr" style="position:absolute;bottom:1.6rem;right:1.8rem;z-index:20;opacity:0;transition:opacity 0.9s ease 2.4s;display:flex;flex-direction:column;align-items:center;gap:0.5rem;">
+    <div style="background:rgba(10,14,26,0.88);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:0.6rem;box-shadow:0 0 28px rgba(56,189,248,0.14),inset 0 0 10px rgba(56,189,248,0.04);backdrop-filter:blur(14px);position:relative;">
+      <div style="position:absolute;inset:-1px;border-radius:12px;background:linear-gradient(135deg,rgba(56,189,248,0.18),rgba(74,222,128,0.08),rgba(56,189,248,0.04));pointer-events:none;z-index:0"></div>
+      <div id="land-qr-canvas" style="position:relative;z-index:1;line-height:0"></div>
+    </div>
+    <div style="text-align:center;line-height:1.55;">
+      <div style="font-size:0.6rem;color:#64748b;font-family:'Space Grotesk',sans-serif;letter-spacing:0.08em;text-transform:uppercase;">📱 Scan to follow along</div>
+      <div style="font-size:0.63rem;color:#38bdf8;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;">waveletpro.vercel.app</div>
     </div>
   </div>
 </div>
@@ -3085,11 +3100,30 @@ function initLandingCanvas(){
 // LANDING SCREEN ANIMATIONS
 // ============================================================
 function animateLanding(){
-  const ids=['land-badge','land-title','land-sub','land-author','land-chips','land-cta','land-hint'];
+  const ids=['land-badge','land-title','land-sub','land-author','land-chips','land-cta','land-hint','land-qr'];
   ids.forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.style.opacity='1';el.style.transform='translateY(0) scale(1)';}
   });
+  // Generate QR code once library is ready
+  setTimeout(generateLandingQR, 200);
+}
+
+function generateLandingQR(){
+  var el=document.getElementById('land-qr-canvas');
+  if(!el||el.hasChildNodes())return;
+  if(typeof QRCode==='undefined'){setTimeout(generateLandingQR,300);return;}
+  new QRCode(el,{
+    text:'https://waveletpro.vercel.app/',
+    width:112,
+    height:112,
+    colorDark:'#38bdf8',
+    colorLight:'#0a0e1a',
+    correctLevel:QRCode.CorrectLevel.M
+  });
+  // Round the generated canvas/img
+  var child=el.firstChild;
+  if(child){child.style.borderRadius='6px';child.style.display='block';}
 }
 
 function startPresentation(){
