@@ -113,7 +113,7 @@ body{padding:0.8rem 1rem 1.5rem}
 
   <div class="actions">
     <button class="btn-submit" id="btn-submit" onclick="submitQuiz()">Submit Answers</button>
-    <button class="btn-retry" id="btn-retry" onclick="resetQuiz()">&#8635; Retry</button>
+    <button class="btn-retry" id="btn-return" onclick="window.location.href='index.html'">&#8592; Back to Presentation</button>
   </div>
 
   <div id="results">
@@ -387,7 +387,7 @@ function submitQuiz() {
   document.getElementById('score-msg').textContent = msg;
   document.getElementById('results').style.display = 'block';
   document.getElementById('btn-submit').style.display = 'none';
-  document.getElementById('btn-retry').style.display  = 'inline-block';
+  document.getElementById('btn-return').style.display  = 'inline-block';
   document.getElementById('status').innerHTML =
     '<span style="color:' + color + '">Score: ' + score + '/10 — ' + msg + '</span>';
 
@@ -413,30 +413,6 @@ function submitQuiz() {
   })
   .then(function() { console.log('Sheets saved successfully (opaque response)'); })
   .catch(function(e) { console.warn('Sheets save failed:', e); });
-}
-
-// ── Retry ─────────────────────────────────────────────────────
-function resetQuiz() {
-  userAnswers = {};
-  submitted   = false;
-  QUESTIONS.forEach(function(q, qi) {
-    var card = document.getElementById('card-' + qi);
-    if (card) card.style.borderColor = '#2a3a55';
-    for (var k = 0; k < 4; k++) {
-      var lbl = document.getElementById('opt-' + qi + '-' + k);
-      if (!lbl) continue;
-      lbl.className = 'opt';
-      var inp = lbl.querySelector('input');
-      if (inp) { inp.disabled = false; inp.checked = false; }
-    }
-    var expEl = document.getElementById('exp-' + qi);
-    if (expEl) expEl.style.display = 'none';
-  });
-  document.getElementById('results').style.display  = 'none';
-  document.getElementById('btn-submit').style.display = 'inline-block';
-  document.getElementById('btn-retry').style.display  = 'none';
-  document.getElementById('status').innerHTML =
-    'Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong>';
 }
 </script>
 </body>
