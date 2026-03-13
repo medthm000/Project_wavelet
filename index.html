@@ -1165,7 +1165,7 @@ svg text{font-family:'Space Grotesk',sans-serif}
       <p style="color:var(--text-muted);font-size:0.82rem">Explore further: Wavelet Coherence · MODWT · WD-GARCH</p>
       <p style="color:var(--text-muted);font-size:0.72rem;margin-top:0.3rem">Data: EIA · IMF · BLS · BEA · LBMA · CoinMarketCap</p>
       <div style="margin-top:1.2rem">
-        <button onclick="openQuiz()" style="background:linear-gradient(135deg,rgba(244,114,182,0.18),rgba(167,139,250,0.12));border:1px solid #f472b6;color:#f472b6;padding:0.7rem 2.2rem;border-radius:50px;cursor:pointer;font-size:0.95rem;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:0.03em;box-shadow:0 0 18px rgba(244,114,182,0.25);transition:all 0.3s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 28px rgba(244,114,182,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 18px rgba(244,114,182,0.25)'">
+        <button onclick="window.location.href='quiz.html'" style="background:linear-gradient(135deg,rgba(244,114,182,0.18),rgba(167,139,250,0.12));border:1px solid #f472b6;color:#f472b6;padding:0.7rem 2.2rem;border-radius:50px;cursor:pointer;font-size:0.95rem;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:0.03em;box-shadow:0 0 18px rgba(244,114,182,0.25);transition:all 0.3s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 28px rgba(244,114,182,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 18px rgba(244,114,182,0.25)'">
           &#127942; Take the Quiz
         </button>
       </div>
@@ -3377,7 +3377,12 @@ function resetQuiz(){
 }
 
 function openQuiz(){
-  window.open('quiz.html','_blank');
+  document.getElementById('quiz-modal').style.display='block';
+  document.body.style.overflow='hidden';
+  if(!document.getElementById('qz-grid').hasChildNodes()){buildQuizGrid();}
+  var qzBtn=document.getElementById('qz-chat-btn');if(qzBtn)qzBtn.style.display='flex';
+  var chatBtn=document.getElementById('chat-btn');if(chatBtn)chatBtn.style.display='none';
+  var chatPanel=document.getElementById('chat-panel');if(chatPanel)chatPanel.style.display='none';chatOpen=false;
 }
 
 function closeQuiz(){
