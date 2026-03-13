@@ -3377,12 +3377,7 @@ function resetQuiz(){
 }
 
 function openQuiz(){
-  document.getElementById('quiz-modal').style.display='block';
-  document.body.style.overflow='hidden';
-  if(!document.getElementById('qz-grid').hasChildNodes()){buildQuizGrid();}
-  var qzBtn=document.getElementById('qz-chat-btn');if(qzBtn)qzBtn.style.display='flex';
-  var chatBtn=document.getElementById('chat-btn');if(chatBtn)chatBtn.style.display='none';
-  var chatPanel=document.getElementById('chat-panel');if(chatPanel)chatPanel.style.display='none';chatOpen=false;
+  window.open('quiz.html','_blank');
 }
 
 function closeQuiz(){
