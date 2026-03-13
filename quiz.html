@@ -3,27 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz</title>
+<title>Quiz — Multi-Scale Analysis</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#0a0e1a;font-family:'Space Grotesk',sans-serif;color:#f0f4ff;overflow-y:auto;overflow-x:hidden}
+html,body{width:100%;min-height:100%;background:#0a0e1a;font-family:'Space Grotesk',sans-serif;color:#f0f4ff;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+body{padding:0.8rem 1rem 1.5rem}
 
-body{padding:0.8rem 1rem 1.2rem}
+/* ── Registration screen ── */
+#reg-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh}
+.reg-card{background:#111827;border:1px solid #2a3a55;border-radius:14px;padding:2rem 2.2rem;width:100%;max-width:420px}
+.reg-badge{display:inline-block;font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#f472b6;padding:0.18rem 0.6rem;background:#1a2235;border:1px solid #f472b6;border-radius:20px;margin-bottom:0.5rem}
+.reg-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f0f4ff;margin-bottom:0.2rem}
+.reg-sub{font-size:0.78rem;color:#64748b;margin-bottom:1.6rem;line-height:1.5}
+.field-label{font-size:0.72rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.35rem;display:block}
+.field-req{color:#f472b6;margin-left:2px}
+.field-opt{color:#3a4a65;font-size:0.65rem;font-weight:400;text-transform:none;margin-left:4px}
+.reg-input{width:100%;background:#0a0e1a;border:1px solid #2a3a55;color:#f0f4ff;border-radius:7px;padding:0.55rem 0.8rem;font-size:0.85rem;font-family:'Space Grotesk',sans-serif;outline:none;transition:border-color 0.2s;margin-bottom:0.4rem}
+.reg-input:focus{border-color:#f472b6}
+.reg-input::placeholder{color:#3a4a65}
+.reg-err{font-size:0.73rem;color:#f87171;margin-bottom:0.8rem;min-height:1rem;display:none}
+.reg-gap{margin-bottom:0.9rem}
+.btn-start{width:100%;background:linear-gradient(135deg,rgba(244,114,182,0.18),rgba(167,139,250,0.12));border:1px solid #f472b6;color:#f472b6;padding:0.6rem 1.8rem;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:700;font-family:'Space Grotesk',sans-serif;transition:all 0.2s;margin-top:0.6rem}
+.btn-start:hover{background:rgba(244,114,182,0.25)}
 
+/* ── Quiz screen ── */
+#quiz-screen{display:none}
 .header{text-align:center;margin-bottom:0.7rem}
 .badge{display:inline-block;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#f472b6;padding:0.2rem 0.65rem;background:#1a2235;border:1px solid #f472b6;border-radius:20px;margin-bottom:0.35rem}
 .title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#f0f4ff;margin-bottom:0.15rem}
-.subtitle{font-size:0.75rem;color:#64748b}
+#student-banner{font-size:0.75rem;color:#64748b;margin-bottom:0.15rem}
 #status{font-size:0.75rem;color:#64748b;margin-top:0.2rem;min-height:1.2em}
 
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-bottom:0.6rem}
-
 .q-card{background:#111827;border:1px solid #2a3a55;border-radius:8px;padding:0.5rem 0.65rem;transition:border-color 0.3s}
 .q-head{font-size:0.73rem;font-weight:600;color:#f0f4ff;margin-bottom:0.28rem;display:flex;justify-content:space-between;align-items:flex-start;gap:0.4rem}
 .q-num{color:#f472b6;margin-right:0.25rem;flex-shrink:0}
 .diff-badge{font-size:0.58rem;border:1px solid currentColor;border-radius:3px;padding:0.08rem 0.28rem;flex-shrink:0;margin-top:1px}
-
 .opts{display:flex;flex-direction:column;gap:0.18rem}
 .opt{display:flex;align-items:flex-start;gap:0.35rem;cursor:pointer;padding:0.2rem 0.38rem;border-radius:4px;border:1px solid transparent;transition:background 0.15s,border-color 0.15s,color 0.15s;font-size:0.69rem;color:#94a3b8;user-select:none}
 .opt:hover:not(.locked){background:rgba(244,114,182,0.06);border-color:rgba(244,114,182,0.3)}
@@ -31,7 +50,6 @@ body{padding:0.8rem 1rem 1.2rem}
 .opt.selected{background:rgba(244,114,182,0.1);border-color:#f472b6;color:#f472b6}
 .opt.correct{background:rgba(74,222,128,0.1);border-color:#4ade80;color:#4ade80}
 .opt.wrong{background:rgba(248,113,113,0.09);border-color:#f87171;color:#f87171}
-
 .explanation{display:none;margin-top:0.28rem;font-size:0.67rem;padding:0.28rem 0.45rem;border-radius:4px;border-left:3px solid #4ade80;background:rgba(74,222,128,0.05);color:#94a3b8;line-height:1.5}
 
 .actions{display:flex;justify-content:center;gap:0.8rem;margin-bottom:0.5rem}
@@ -43,151 +61,301 @@ body{padding:0.8rem 1rem 1.2rem}
 #results{display:none;text-align:center;padding:0.6rem;background:#111827;border:1px solid #2a3a55;border-radius:10px}
 .score-big{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800}
 .score-msg{font-size:0.78rem;color:#94a3b8;margin-top:0.2rem}
+
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr}
+  .reg-card{padding:1.4rem 1.2rem}
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="badge">Knowledge Check</div>
-  <div class="title">Quick Quiz</div>
-  <div id="status" class="subtitle">Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong></div>
+<!-- ══ REGISTRATION SCREEN ══ -->
+<div id="reg-screen">
+  <div class="reg-card">
+    <div class="reg-badge">Knowledge Check</div>
+    <div class="reg-title">Multi-Scale Analysis</div>
+    <div class="reg-sub">Please enter your information before starting the quiz.</div>
+
+    <label class="field-label" for="inp-name">
+      Full Name <span class="field-req">*</span>
+    </label>
+    <input class="reg-input" id="inp-name" type="text"
+      placeholder="e.g. Ahmed El Mansouri"
+      autocomplete="off"
+      onkeydown="if(event.key==='Enter')startQuiz()">
+    <div class="reg-err" id="err-name">Full name is required to continue.</div>
+
+    <div class="reg-gap">
+      <label class="field-label" for="inp-id">
+        Student ID <span class="field-opt">(optional)</span>
+      </label>
+      <input class="reg-input" id="inp-id" type="text"
+        placeholder="e.g. 20231042"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter')startQuiz()">
+    </div>
+
+    <button class="btn-start" onclick="startQuiz()">Start Quiz &rarr;</button>
+  </div>
 </div>
 
-<div class="grid" id="quiz-grid"></div>
+<!-- ══ QUIZ SCREEN ══ -->
+<div id="quiz-screen">
+  <div class="header">
+    <div class="badge">Knowledge Check</div>
+    <div class="title">Quick Quiz</div>
+    <div id="student-banner"></div>
+    <div id="status">Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong></div>
+  </div>
 
-<div class="actions">
-  <button class="btn-submit" id="btn-submit" onclick="submitQuiz()">Submit Answers</button>
-  <button class="btn-retry" id="btn-retry" onclick="resetQuiz()">&#8635; Retry</button>
-</div>
+  <div class="grid" id="quiz-grid"></div>
 
-<div id="results">
-  <div class="score-big" id="score-big"></div>
-  <div class="score-msg" id="score-msg"></div>
+  <div class="actions">
+    <button class="btn-submit" id="btn-submit" onclick="submitQuiz()">Submit Answers</button>
+    <button class="btn-retry" id="btn-retry" onclick="resetQuiz()">&#8635; Retry</button>
+  </div>
+
+  <div id="results">
+    <div class="score-big" id="score-big"></div>
+    <div class="score-msg" id="score-msg"></div>
+  </div>
 </div>
 
 <script>
+var studentName = '';
+var studentID   = '';
+var userAnswers = {};
+var submitted   = false;
+
+var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyiYUodYc5viBT1Qa8Br8FJKMhn4K0Id_uYYVv66--Oxb-GAtjl7QQZ7pKQm52rWD6S6Q/exec';
+
 var QUESTIONS = [
+  // ── EASY (3) ──
   {
-    q: "What does a time series represent?",
+    q: "Which property defines a stationary time series?",
     diff: "Easy", diffColor: "#4ade80",
-    opts: ["A static snapshot at one moment", "Any measurement recorded over time", "A frequency spectrum", "A type of wavelet transform"],
+    opts: [
+      "Its mean and variance change systematically over time",
+      "Its mean, variance, and autocovariance remain constant over time",
+      "It contains no seasonal component whatsoever",
+      "It is recorded at equally spaced intervals"
+    ],
     ans: 1,
-    exp: "A time series is any number recorded over time, like oil prices monthly or GDP every quarter."
+    exp: "Stationarity requires that the mean, variance and autocorrelation structure do not change over time — a prerequisite before fitting ARMA-type models."
   },
   {
-    q: "What is the main limitation of Fourier analysis?",
+    q: "What critical limitation of Fourier analysis does wavelet analysis overcome?",
     diff: "Easy", diffColor: "#4ade80",
-    opts: ["Cannot detect frequencies", "Too slow to compute", "Shows WHAT frequencies exist but not WHEN", "Only works on economic data"],
+    opts: [
+      "Fourier is computationally too slow for economic data",
+      "Fourier cannot detect any frequencies in financial signals",
+      "Fourier reveals WHAT frequencies exist but loses all information about WHEN they occur",
+      "Fourier only works on discrete data"
+    ],
     ans: 2,
-    exp: "Fourier has time blindness: it reveals what frequencies exist but loses all time information."
+    exp: "Fourier analysis has 'time blindness': it decomposes a signal into global frequencies but cannot locate them in time. Wavelets solve this by offering joint time-frequency localization."
   },
   {
-    q: "Which wavelet uses a simple +1 and -1 step function?",
+    q: "In a db4 decomposition at level 3, which component captures the long-term secular trend?",
     diff: "Easy", diffColor: "#4ade80",
-    opts: ["Morlet wavelet", "Daubechies db4", "Haar wavelet", "Mexican hat"],
-    ans: 2,
-    exp: "The Haar wavelet uses +1 and -1 values, making it the simplest and fastest shock detector."
-  },
-  {
-    q: "In db4 decomposition, which layer represents the long-term trend?",
-    diff: "Medium", diffColor: "#fbbf24",
-    opts: ["D1 — red", "D2 — gold", "D3 — green", "A3 — teal"],
+    opts: [
+      "D1 — the finest detail layer",
+      "D2 — medium-frequency detail",
+      "D3 — coarse detail layer",
+      "A3 — the approximation (residual trend)"
+    ],
     ans: 3,
-    exp: "A3 is the Approximation at level 3, capturing the slow long-term economic movement over years."
+    exp: "A3 is the low-frequency approximation remaining after extracting three detail layers. It retains the slow-moving trend that unfolds over years or decades."
   },
+  // ── MEDIUM (3) ──
   {
-    q: "The 2008 crisis lasted ~2 years. In which layer does it mainly appear?",
+    q: "Why is the ADF test applied to a time series before fitting an ARMA model?",
     diff: "Medium", diffColor: "#fbbf24",
-    opts: ["D1 — High-frequency noise", "D2 — Monthly volatility", "D3 — Business cycles 2-4 yr", "A3 — Long-term trend"],
-    ans: 2,
-    exp: "2-year events appear in D3 (business cycles). COVID lasted only 2 months so it appears in D1."
+    opts: [
+      "To choose the optimal wavelet family for decomposition",
+      "To confirm stationarity — ARMA models require a stationary input series",
+      "To estimate the seasonal period of the data",
+      "To compare forecast accuracy between competing models"
+    ],
+    ans: 1,
+    exp: "The Augmented Dickey-Fuller test checks for a unit root. If the series is non-stationary, ARMA estimates are unreliable. We must difference or transform the series until stationarity is achieved."
   },
   {
-    q: "What does Morlet coherence measure between two signals?",
+    q: "The COVID-19 shock of early 2020 caused a sharp but brief spike in unemployment. In which wavelet layer would this shock mainly appear?",
     diff: "Medium", diffColor: "#fbbf24",
-    opts: ["Speed of computation", "How synchronized two signals are over time", "Number of decomposition levels", "ARMA error rate"],
-    ans: 1,
-    exp: "Morlet coherence measures how synchronized two signals are, like Gold vs Dollar, and whether this changes during crises."
+    opts: [
+      "A3 — long-term trend",
+      "D3 — business cycles of 2–4 years",
+      "D2 — medium cycles of several months",
+      "D1 — high-frequency noise and rapid shocks"
+    ],
+    ans: 3,
+    exp: "Because the COVID shock lasted only a few months, it concentrates in the high-frequency detail layer D1. Longer crises like 2008 (spanning ~2 years) would appear in D3."
   },
   {
-    q: "What was the RMSE improvement of Wavelet+ARMA over ARMA alone on Bitcoin?",
+    q: "On a Morlet coherence map, what does a warm color (value close to 1) at a given time and scale indicate?",
+    diff: "Medium", diffColor: "#fbbf24",
+    opts: [
+      "The two signals are completely independent at that point",
+      "Strong co-movement between the two signals at that specific time and frequency scale",
+      "The phase relationship between the signals is exactly 90 degrees",
+      "The wavelet transform has an estimation error at that scale"
+    ],
+    ans: 1,
+    exp: "Coherence close to 1 signals strong synchronization between the two series at a given time and frequency — analogous to a localized, scale-specific correlation coefficient."
+  },
+  // ── GOOD (2) ──
+  {
+    q: "In the Wavelet+ARMA hybrid, ARMA is fitted to each decomposed layer separately. What is the main statistical justification?",
     diff: "Good", diffColor: "#fb923c",
-    opts: ["25% improvement", "40% improvement", "61% improvement", "82% improvement"],
+    opts: [
+      "Each layer contains more data points than the original series",
+      "Each layer is closer to stationarity with simpler dynamics, better satisfying ARMA assumptions",
+      "ARMA cannot handle series with structural breaks in the raw signal",
+      "Separate modeling eliminates the need for ADF testing"
+    ],
+    ans: 1,
+    exp: "Wavelet decomposition isolates each frequency band into a sub-signal with weaker non-stationarity and simpler autocorrelation structure, making ARMA estimation more reliable and reducing model misspecification."
+  },
+  {
+    q: "On a Morocco unemployment study (1991–2024), the Wavelet+ARMA model achieved lower RMSE than plain ARIMA. Which factor most directly explains this?",
+    diff: "Good", diffColor: "#fb923c",
+    opts: [
+      "Wavelets increase the number of observations available for estimation",
+      "The hybrid allows a tailored ARMA specification for each frequency band, reducing misspecification error",
+      "ARIMA cannot model annual data while wavelets can",
+      "The hybrid automatically removes outliers before forecasting"
+    ],
+    ans: 1,
+    exp: "By fitting a separate model to each frequency layer, the hybrid captures distinct dynamics at different scales (shocks vs. cycles vs. trends) rather than forcing one ARIMA structure onto all of them."
+  },
+  // ── DEEP (2) ──
+  {
+    q: "Morlet coherence of gold vs. the US dollar index during 2022–2024 revealed an anomaly. Which statement correctly describes it?",
+    diff: "Deep", diffColor: "#f87171",
+    opts: [
+      "Both assets fell together, confirming the classic safe-haven inverse relationship",
+      "Coherence dropped to zero, meaning the markets fully decoupled",
+      "Both assets rose simultaneously, breaking the historical inverse relationship — detectable only through time-frequency localization",
+      "Gold remained stationary while the dollar became highly volatile"
+    ],
     ans: 2,
-    exp: "RMSE dropped from $12,400 to $4,800, a 61% improvement in forecast accuracy."
+    exp: "Historically gold rises when the dollar falls. In 2022–2024 both rose together — driven by geopolitical risk and central bank demand. Standard correlation cannot locate WHEN this regime changed; wavelet coherence pinpoints it precisely in both time and scale."
   },
   {
-    q: "Why apply ARMA to each wavelet layer separately rather than the full signal?",
-    diff: "Good", diffColor: "#fb923c",
-    opts: ["Each layer has more data", "Each layer is simpler and more stationary", "ARMA cannot process full signals", "Layers have higher frequency"],
-    ans: 1,
-    exp: "After decomposition each layer is simpler and closer to stationary, exactly what ARMA models need to work well."
-  },
-  {
-    q: "What anomaly did Morlet coherence detect in Gold vs Dollar during 2022-2024?",
+    q: "In the Morlet wavelet \\( \\psi(t) = \\pi^{-1/4} \\cdot e^{i\\omega_0 t} \\cdot e^{-t^2/2} \\), what distinct roles do the two exponential terms play?",
     diff: "Deep", diffColor: "#f87171",
-    opts: ["Both crashed simultaneously", "Both ROSE simultaneously breaking the classic inverse rule", "Coherence reached zero", "Dollar became uncorrelated with all assets"],
+    opts: [
+      "Both components control frequency resolution; neither contributes to time localization",
+      "\\( e^{i\\omega_0 t} \\) provides frequency sensitivity; \\( e^{-t^2/2} \\) is the Gaussian envelope providing time localization",
+      "\\( e^{-t^2/2} \\) selects the frequency band; \\( e^{i\\omega_0 t} \\) normalizes the energy",
+      "The two terms are mathematically redundant and can be replaced by a single sinusoid"
+    ],
     ans: 1,
-    exp: "Normally Gold UP means Dollar DOWN. In 2022-2024 both rose simultaneously, an anomaly only Morlet wavelet coherence could detect."
-  },
-  {
-    q: "In the Morlet formula, what does the Gaussian component e^(-t^2/2) provide?",
-    diff: "Deep", diffColor: "#f87171",
-    opts: ["Frequency sensitivity only", "TIME localization", "Both time and frequency equally", "Only normalization"],
-    ans: 1,
-    exp: "The Gaussian bell localizes the wavelet in TIME, while the complex sine wave e^(iw0t) provides FREQUENCY sensitivity."
+    exp: "\\( e^{i\\omega_0 t} \\) is a complex oscillation acting as a bandpass filter tuned to frequency \\( \\omega_0 \\). \\( e^{-t^2/2} \\) is the Gaussian bell that concentrates the wavelet in time. Together they achieve the optimal time-frequency resolution bounded by Heisenberg's uncertainty principle."
   }
 ];
 
-var userAnswers = {};
-var submitted = false;
+// ── Registration ──────────────────────────────────────────────
+function startQuiz() {
+  var nameVal = document.getElementById('inp-name').value.trim();
+  var errEl   = document.getElementById('err-name');
+  if (!nameVal) {
+    errEl.style.display = 'block';
+    document.getElementById('inp-name').focus();
+    return;
+  }
+  errEl.style.display = 'none';
+  studentName = nameVal;
+  studentID   = document.getElementById('inp-id').value.trim();
 
-// Build quiz
-var grid = document.getElementById('quiz-grid');
-QUESTIONS.forEach(function(q, qi) {
-  var card = document.createElement('div');
-  card.className = 'q-card';
-  card.id = 'card-' + qi;
+  document.getElementById('reg-screen').style.display  = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
 
-  var head = '<div class="q-head"><span><span class="q-num">Q' + (qi+1) + '.</span>' + q.q + '</span>'
-    + '<span class="diff-badge" style="color:' + q.diffColor + '">' + q.diff + '</span></div>';
+  var idPart = studentID
+    ? ' &nbsp;&middot;&nbsp; ID: <strong style="color:#f0f4ff">' + studentID + '</strong>'
+    : '';
+  document.getElementById('student-banner').innerHTML =
+    'Student: <strong style="color:#f0f4ff">' + studentName + '</strong>' + idPart;
 
-  var opts = '<div class="opts">';
-  q.opts.forEach(function(opt, oi) {
-    opts += '<label class="opt" id="opt-' + qi + '-' + oi + '" onclick="selectOpt(' + qi + ',' + oi + ')">'
-      + '<input type="radio" name="q' + qi + '" value="' + oi + '"> <span>' + opt + '</span></label>';
+  buildQuiz();
+}
+
+// ── Build grid ────────────────────────────────────────────────
+function buildQuiz() {
+  var grid = document.getElementById('quiz-grid');
+  grid.innerHTML = '';
+  QUESTIONS.forEach(function(q, qi) {
+    var card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = 'card-' + qi;
+    var head = '<div class="q-head"><span><span class="q-num">Q' + (qi+1) + '.</span>' + q.q + '</span>'
+      + '<span class="diff-badge" style="color:' + q.diffColor + '">' + q.diff + '</span></div>';
+    var opts = '<div class="opts">';
+    q.opts.forEach(function(opt, oi) {
+      opts += '<label class="opt" id="opt-' + qi + '-' + oi + '" onclick="selectOpt(' + qi + ',' + oi + ')">'
+        + '<input type="radio" name="q' + qi + '" value="' + oi + '"> <span>' + opt + '</span></label>';
+    });
+    opts += '</div>';
+    card.innerHTML = head + opts + '<div class="explanation" id="exp-' + qi + '">' + q.exp + '</div>';
+    grid.appendChild(card);
   });
-  opts += '</div>';
-
-  var exp = '<div class="explanation" id="exp-' + qi + '">' + q.exp + '</div>';
-
-  card.innerHTML = head + opts + exp;
-  grid.appendChild(card);
-});
-
-function selectOpt(qi, oi) {
-  if (submitted) return;
-  userAnswers[qi] = oi;
-  for (var k = 0; k < 4; k++) {
-    var lbl = document.getElementById('opt-' + qi + '-' + k);
-    if (!lbl) continue;
-    lbl.classList.remove('selected');
-    if (k === oi) lbl.classList.add('selected');
+  
+  if (window.MathJax) {
+    MathJax.typesetPromise().catch(function (err) { console.log('MathJax error:', err.message); });
   }
 }
 
+// ── Select option ─────────────────────────────────────────────
+function selectOpt(qi, oi) {
+  if (submitted) return;
+  userAnswers[qi] = oi;
+  
+  // إخفاء التحذير الأحمر بمجرد إجابة الطالب عن السؤال المنسي
+  var card = document.getElementById('card-' + qi);
+  if (card) {
+    card.style.borderColor = '#2a3a55';
+    card.style.boxShadow = 'none';
+  }
+
+  for (var k = 0; k < 4; k++) {
+    var lbl = document.getElementById('opt-' + qi + '-' + k);
+    if (lbl) lbl.classList.remove('selected');
+  }
+  var chosen = document.getElementById('opt-' + qi + '-' + oi);
+  if (chosen) chosen.classList.add('selected');
+}
+
+// ── Submit ────────────────────────────────────────────────────
 function submitQuiz() {
   var answered = Object.keys(userAnswers).length;
   if (answered < 10) {
-    document.getElementById('status').innerHTML = '<span style="color:#f87171">Please answer all questions (' + answered + '/10 answered)</span>';
+    // Alert user that not all questions are answered
+    alert('Warning: You have not answered all questions!\n\nYou have answered ' + answered + ' out of 10 questions.\nPlease review the questions highlighted in red and answer them to proceed.');
+    
+    document.getElementById('status').innerHTML =
+      '<span style="color:#f87171; font-weight:bold; font-size:0.85rem;">⚠️ Please answer all questions (' + answered + '/10)</span>';
+
+    // تمييز الأسئلة غير المجاب عنها باللون الأحمر
+    QUESTIONS.forEach(function(q, qi) {
+      if (typeof userAnswers[qi] === 'undefined') {
+        var card = document.getElementById('card-' + qi);
+        if (card) {
+          card.style.borderColor = '#f87171';
+          card.style.boxShadow = '0 0 8px rgba(248,113,113,0.3)';
+        }
+      }
+    });
     return;
   }
   submitted = true;
   var score = 0;
+
   QUESTIONS.forEach(function(q, qi) {
     var correct = q.ans;
-    var user = userAnswers[qi];
-    var card = document.getElementById('card-' + qi);
+    var user    = userAnswers[qi];
+    var card    = document.getElementById('card-' + qi);
     for (var k = 0; k < 4; k++) {
       var lbl = document.getElementById('opt-' + qi + '-' + k);
       if (!lbl) continue;
@@ -195,11 +363,8 @@ function submitQuiz() {
       lbl.classList.add('locked');
       var inp = lbl.querySelector('input');
       if (inp) inp.disabled = true;
-      if (k === correct) {
-        lbl.classList.add('correct');
-      } else if (k === user && user !== correct) {
-        lbl.classList.add('wrong');
-      }
+      if (k === correct) lbl.classList.add('correct');
+      else if (k === user && user !== correct) lbl.classList.add('wrong');
     }
     if (user === correct) {
       score++;
@@ -211,23 +376,49 @@ function submitQuiz() {
     if (expEl) expEl.style.display = 'block';
   });
 
-  var pct = Math.round((score / 10) * 100);
+  var pct   = Math.round((score / 10) * 100);
   var color = score >= 8 ? '#4ade80' : score >= 5 ? '#fbbf24' : '#f87171';
-  var msg = score >= 8 ? 'Excellent! You mastered the material.'
-    : score >= 5 ? 'Good understanding! Review the highlighted answers.'
-    : 'Keep studying — re-read the slides and try again!';
+  var msg   = score >= 8 ? 'Excellent! You have mastered the material.'
+            : score >= 5 ? 'Good understanding! Review the highlighted answers.'
+            : 'Keep studying — re-read the slides and try again!';
 
-  document.getElementById('score-big').innerHTML = '<span style="color:' + color + '">' + score + '/10</span> <span style="font-size:1rem;color:#64748b">(' + pct + '%)</span>';
+  document.getElementById('score-big').innerHTML =
+    '<span style="color:' + color + '">' + score + '/10</span> <span style="font-size:1rem;color:#64748b">(' + pct + '%)</span>';
   document.getElementById('score-msg').textContent = msg;
   document.getElementById('results').style.display = 'block';
   document.getElementById('btn-submit').style.display = 'none';
-  document.getElementById('btn-retry').style.display = 'inline-block';
-  document.getElementById('status').innerHTML = '<span style="color:' + color + '">Score: ' + score + '/10 — ' + msg + '</span>';
+  document.getElementById('btn-retry').style.display  = 'inline-block';
+  document.getElementById('status').innerHTML =
+    '<span style="color:' + color + '">Score: ' + score + '/10 — ' + msg + '</span>';
+
+  // ── Send to Google Sheets ──────────────────────────────────
+  var answersArray = [];
+  for (var i = 0; i < 10; i++) {
+    answersArray.push(
+      typeof userAnswers[i] !== 'undefined'
+        ? QUESTIONS[i].opts[userAnswers[i]]
+        : 'No answer'
+    );
+  }
+  fetch(SHEETS_URL, {
+    method:  'POST',
+    mode: 'no-cors', // نتجاهل أخطاء CORS في المتصفح
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      name:      studentName,
+      studentID: studentID,
+      score:     score,
+      answers:   answersArray
+    })
+  })
+  .then(function() { console.log('Sheets saved successfully (opaque response)'); })
+  .catch(function(e) { console.warn('Sheets save failed:', e); });
 }
 
+// ── Retry ─────────────────────────────────────────────────────
 function resetQuiz() {
   userAnswers = {};
-  submitted = false;
+  submitted   = false;
   QUESTIONS.forEach(function(q, qi) {
     var card = document.getElementById('card-' + qi);
     if (card) card.style.borderColor = '#2a3a55';
@@ -241,10 +432,11 @@ function resetQuiz() {
     var expEl = document.getElementById('exp-' + qi);
     if (expEl) expEl.style.display = 'none';
   });
-  document.getElementById('results').style.display = 'none';
+  document.getElementById('results').style.display  = 'none';
   document.getElementById('btn-submit').style.display = 'inline-block';
-  document.getElementById('btn-retry').style.display = 'none';
-  document.getElementById('status').innerHTML = 'Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong>';
+  document.getElementById('btn-retry').style.display  = 'none';
+  document.getElementById('status').innerHTML =
+    'Answer all 10 questions then click <strong style="color:#f472b6">Submit</strong>';
 }
 </script>
 </body>
